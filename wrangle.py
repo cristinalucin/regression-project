@@ -70,7 +70,6 @@ def clean_zillow(df):
                               'calculatedfinishedsquarefeet':'square_feet',
                               'taxvaluedollarcnt':'tax_value', 
                               'yearbuilt':'year_built',
-                              'taxamount':'tax_amount',
                               'lotsizesquarefeet' : 'lot_size',
                               'transactiondate' : 'transaction_date',
                               'parcelid' : 'parcel_id'
@@ -98,10 +97,7 @@ def clean_zillow(df):
     df["home_age"] = df["home_age"].astype(int)
     
     #Remove outliers
-    df = remove_outliers(df,['bedrooms','bathrooms','square_feet','tax_value','tax_amount'])
-    
-    #Make dummy variables from county
-    df = pd.get_dummies(df, columns=['county'], drop_first=False)
+    df = remove_outliers(df,['bedrooms','bathrooms','square_feet','tax_value'])
     
     return df
 

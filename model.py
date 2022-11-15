@@ -71,7 +71,7 @@ def scale_data(train,
     else:
         return train_scaled, validate_scaled, test_scaled
     
-def model_prep(train,validate,test):
+def model1_prep(train,validate,test):
     '''
     This function prepares train, validate, test for modeling by dropping columns not necessary
     or compatible with modeling algorithms.
@@ -81,10 +81,7 @@ def model_prep(train,validate,test):
                  'bathrooms',
                  'square_feet',
                  'tax_value',
-                 'home_age',
-                 'county_Los Angeles',
-                 'county_Orange',
-                 'county_Ventura']
+                 ]
     
     train = train[keep_cols]
     validate = validate[keep_cols]
