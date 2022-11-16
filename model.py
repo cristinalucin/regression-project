@@ -73,13 +73,42 @@ def scale_data(train,
     
 def model1_prep(train,validate,test):
     '''
-    This function prepares train, validate, test for modeling by dropping columns not necessary
+    This function prepares train, validate, test for model 1 by dropping columns not necessary
     or compatible with modeling algorithms.
     '''
-    # drop columns not needed
+    # drop columns not needed for model 1
     keep_cols = ['bedrooms',
                  'bathrooms',
                  'square_feet',
+                 'tax_value',
+                 ]
+    
+    train = train[keep_cols]
+    validate = validate[keep_cols]
+    test = test[keep_cols]
+
+    # Split data into predicting variables (X) and target variable (y) and reset the index for each dataframe
+    X_train = train.drop(columns='tax_value').reset_index(drop=True)
+    y_train = train[['tax_value']].reset_index(drop=True)
+
+    X_validate = validate.drop(columns='tax_value').reset_index(drop=True)
+    y_validate = validate[['tax_value']].reset_index(drop=True)
+
+    X_test = test.drop(columns='tax_value').reset_index(drop=True)
+    y_test = test[['tax_value']].reset_index(drop=True)
+    
+    return X_train, X_validate, X_test, y_train, y_validate, y_test
+
+def model2_prep(train,validate,test):
+    '''
+    This function prepares train, validate, test for model 2 by dropping columns not necessary
+    or compatible with modeling algorithms.
+    '''
+    # drop columns not needed for model 2
+    keep_cols = ['bathrooms',
+                 'square_feet',
+                 'home_age',
+                 'LA',
                  'tax_value',
                  ]
     

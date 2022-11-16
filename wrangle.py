@@ -64,16 +64,6 @@ def clean_zillow(df):
     ''' This function takes in zillow data, renames columns, replaces whitespace with nan values,
     and drops null values. This function returns a df.
     '''
-    # renaming columns
-    df = df.rename(columns = {'bedroomcnt':'bedrooms', 
-                              'bathroomcnt':'bathrooms', 
-                              'calculatedfinishedsquarefeet':'square_feet',
-                              'taxvaluedollarcnt':'tax_value', 
-                              'yearbuilt':'year_built',
-                              'lotsizesquarefeet' : 'lot_size',
-                              'transactiondate' : 'transaction_date',
-                              'parcelid' : 'parcel_id'
-                    })
     # Replace a whitespace sequence or empty with a NaN value and reassign this manipulation to df. 
     df = df.replace(r'^\s*$', np.nan, regex=True)
     
@@ -82,22 +72,39 @@ def clean_zillow(df):
     
     # Converting some columns from float to integers or objects
     df["fips"] = df["fips"].astype(int)
-    df["year_built"] = df["year_built"].astype(int)
-    df["bedrooms"] = df["bedrooms"].astype(int)    
-    df["square_feet"] = df["square_feet"].astype(int)
-    df["tax_value"] = df["tax_value"].astype(int)
+    df["yearbuilt"] = df["yearbuilt"].astype(int)
+    df["bedroomcnt"] = df["bedroomcnt"].astype(int)    
+    df["lotsizesquarefeet"] = df["lotsizesquarefeet"].astype(int)
+    df["taxvaluedollarcnt"] = df["taxvaluedollarcnt"].astype(int)
     
     # Relabeling FIPS data
     df['county'] = df.fips.replace({6037:'Los Angeles',
                        6059:'Orange',
                        6111:'Ventura'})
     
-    #Creating new column for home age using year_built, casting as integer
-    df['home_age'] = 2017- df.year_built
+    # Creating Dummy Variables from County
+    df = pd.get_dummies(df, columns=['county'], drop_first=False)
+    
+    # Creating new column for home age using year_built, casting as integer
+    df['home_age'] = 2017- df.yearbuilt
     df["home_age"] = df["home_age"].astype(int)
     
-    #Remove outliers
-    df = remove_outliers(df,['bedrooms','bathrooms','square_feet','tax_value'])
+    # Remove outliers
+    df = remove_outliers(df,['taxvaluedollarcnt','bathroomcnt','bedroomcnt','lotsizesquarefeet'])
+    
+    # renaming columns
+    df = df.rename(columns = {'bedroomcnt':'bedrooms', 
+                              'bathroomcnt':'bathrooms', 
+                              'calculatedfinishedsquarefeet':'square_feet',
+                              'taxvaluedollarcnt':'tax_value', 
+                              'yearbuilt':'year_built',
+                              'lotsizesquarefeet' : 'lot_size',
+                              'transactiondate' : 'transaction_date',
+                              'parcelid' : 'parcel_id',
+                              'county_Los Angeles':'LA',
+                              'county_Orange':'Orange',
+                              'county_Ventura':'Ventura'
+                    })
     
     return df
 
