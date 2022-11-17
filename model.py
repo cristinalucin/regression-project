@@ -4,9 +4,10 @@ import numpy as np
 import scipy.stats as stats
 
 import env
+import wrangle as w
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler, QuantileTransformer
+from sklearn.preprocessing import MinMaxScaler, QuantileTransformer
 
 def train_validate_test_split(df, target, seed=123):
     '''
@@ -109,13 +110,83 @@ def model1_prep(train,validate,test):
     
     return X_train, X_validate, X_test, y_train, y_validate, y_test
 
+def get_clean_data():
+    '''This function retrieves clean data to perform modeling'''
+    #Retrieve Zillow data from CSV or Codeup mySQL database
+    df = w.get_zillow_data()
+    #Clean the data
+    df = w.clean_zillow(df)
+    #Split the data
+    train, validate, test = w.train_validate_test_split(df)
+    
+    return train, validate, test
+
 def model2_prep(train,validate,test):
     '''
     This function prepares train, validate, test for model 2 by dropping columns not necessary
-    or compatible with modeling algorithms.
+    or compatible with modeling algorithms, splitting data into target and feature (X and Y), and
+    scaling data for modeling
     '''
+    #Scaling Data
+    train, validate, test = m.scale_data(
+        train, validate, test, columns_to_scale=['bathrooms', 'square_feet','home_age'], return_scaler=False)
+    
+    #Make Dummy Variables for county
+    train = pd.get_dummies(train, columns=['county'], drop_first=False)
+    validate = pd.get_dummies(validate, columns=['county'], drop_first=False)
+    test = pd.get_dummies(test, columns=['county'], drop_first=False)
+    
+    #Change column names for dummy variables
+    train = train.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    validate = validate.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    test = test.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    
     # drop columns not needed for model 2
     keep_cols = ['bathrooms',
+                 'square_feet',
+                 'home_age',
+                 'LA',
+                 'tax_value',
+                 ]
+    
+    train = train[keep_cols]
+    validate = validate[keep_cols]
+    test = test[keep_cols]
+
+    # Split data into predicting variables (X) and target variable (y) and reset the index for each dataframe
+    X_train = train.drop(columns='tax_value').reset_index(drop=True)
+    y_train = train[['tax_value']].reset_index(drop=True)
+
+    X_validate = validate.drop(columns='tax_value').reset_index(drop=True)
+    y_validate = validate[['tax_value']].reset_index(drop=True)
+
+    X_test = test.drop(columns='tax_value').reset_index(drop=True)
+    y_test = test[['tax_value']].reset_index(drop=True)
+    
+    return X_train, X_validate, X_test, y_train, y_validate, y_test
+
+def model3_prep(train,validate,test):
+    '''
+    This function prepares train, validate, test for model 3 by dropping columns not necessary
+    or compatible with modeling algorithms, splitting data into target and feature (X and Y), and
+    scaling data for modeling
+    '''
+    #Scaling Data
+    train, validate, test = m.scale_data(
+        train, validate, test, columns_to_scale=['bedrooms', 'square_feet','home_age'], return_scaler=False)
+
+    #Make Dummy Variables for county
+    train = pd.get_dummies(train, columns=['county'], drop_first=False)
+    validate = pd.get_dummies(validate, columns=['county'], drop_first=False)
+    test = pd.get_dummies(test, columns=['county'], drop_first=False)
+    
+    #Change column names for dummy variables
+    train = train.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    validate = validate.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    test = test.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    
+    # drop columns not needed for model 2
+    keep_cols = ['bedrooms',
                  'square_feet',
                  'home_age',
                  'LA',
