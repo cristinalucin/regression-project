@@ -96,7 +96,7 @@ def clean_zillow(df):
                               'parcelid' : 'parcel_id'}
                                 )
     #remove outliers
-    df = remove_outliers(df,['tax_value','bedrooms','bathrooms','square_feet'])
+    df = remove_outliers(df,['bedrooms','bathrooms','square_feet','tax_value'])
     
     return df
 

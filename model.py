@@ -44,7 +44,7 @@ def visualize_scaler(scaler, df, columns_to_scale, bins=10):
 def scale_data(train, 
                validate, 
                test, 
-               columns_to_scale=['bedrooms', 'bathrooms', 'area','tax_value'],
+               columns_to_scale=['bedrooms', 'bathrooms', 'square_feet','home_age'],
                return_scaler=False):
     '''This function takes in train, validate, test, and outputs scaled data based on
     the chosen method (quantile scaling) using the columns selected as the only columns
