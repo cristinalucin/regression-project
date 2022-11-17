@@ -71,6 +71,16 @@ def scale_data(train,
     else:
         return train_scaled, validate_scaled, test_scaled
     
+def get_dummies(train,validate,test):
+    '''This function generates dummy variables for county and renames counties appropriately'''
+    
+    #Create dummies for county
+    train = pd.get_dummies(train, columns=['county'], drop_first=False)
+    validate = pd.get_dummies(validate, columns=['county'], drop_first=False)
+    test = pd.get_dummies(test, columns=['county'], drop_first=False)
+    
+    return train, validate, test
+        
 def model1_prep(train,validate,test):
     '''
     This function prepares train, validate, test for model 1 by dropping columns not necessary

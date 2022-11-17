@@ -4,7 +4,6 @@ import seaborn as sns
 
 from sklearn.model_selection import train_test_split
 
-
 import os
 import numpy as np
 import env
@@ -82,9 +81,6 @@ def clean_zillow(df):
                        6059:'Orange',
                        6111:'Ventura'})
     
-    # Creating Dummy Variables from County
-    df = pd.get_dummies(df, columns=['county'], drop_first=False)
-    
     # Creating new column for home age using year_built, casting as integer
     df['home_age'] = 2017- df.yearbuilt
     df["home_age"] = df["home_age"].astype(int)
@@ -100,12 +96,8 @@ def clean_zillow(df):
                               'yearbuilt':'year_built',
                               'lotsizesquarefeet' : 'lot_size',
                               'transactiondate' : 'transaction_date',
-                              'parcelid' : 'parcel_id',
-                              'county_Los Angeles':'LA',
-                              'county_Orange':'Orange',
-                              'county_Ventura':'Ventura'
-                    })
-    
+                              'parcelid' : 'parcel_id'}
+                                )
     return df
 
 def train_validate_test_split(df, seed=123):
