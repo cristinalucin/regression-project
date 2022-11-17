@@ -55,7 +55,7 @@ def scale_data(train,
     validate_scaled = validate.copy()
     test_scaled = test.copy()
      # select a scaler
-    scaler = MinMaxScaler()
+    scaler = QuantileTransformer()
      # fit on train
     scaler.fit(train[columns_to_scale])
     # applying the scaler:
@@ -185,8 +185,54 @@ def model3_prep(train,validate,test):
     validate = validate.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
     test = test.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
     
-    # drop columns not needed for model 2
+    # drop columns not needed for model 3
     keep_cols = ['bedrooms',
+                 'square_feet',
+                 'home_age',
+                 'LA',
+                 'tax_value',
+                 ]
+    
+    train = train[keep_cols]
+    validate = validate[keep_cols]
+    test = test[keep_cols]
+
+    # Split data into predicting variables (X) and target variable (y) and reset the index for each dataframe
+    X_train = train.drop(columns='tax_value').reset_index(drop=True)
+    y_train = train[['tax_value']].reset_index(drop=True)
+
+    X_validate = validate.drop(columns='tax_value').reset_index(drop=True)
+    y_validate = validate[['tax_value']].reset_index(drop=True)
+
+    X_test = test.drop(columns='tax_value').reset_index(drop=True)
+    y_test = test[['tax_value']].reset_index(drop=True)
+    
+    return X_train, X_validate, X_test, y_train, y_validate, y_test
+
+
+def model4_prep(train,validate,test):
+    '''
+    This function prepares train, validate, test for model 4 by dropping columns not necessary
+    or compatible with modeling algorithms, splitting data into target and feature (X and Y), and
+    scaling data for modeling (using quantile transformer)
+    '''
+    #Scaling Data
+    train, validate, test = m.scale_data(
+        train, validate, test, columns_to_scale=['bedrooms','bathrooms','square_feet','home_age'], return_scaler=False)
+
+    #Make Dummy Variables for county
+    train = pd.get_dummies(train, columns=['county'], drop_first=False)
+    validate = pd.get_dummies(validate, columns=['county'], drop_first=False)
+    test = pd.get_dummies(test, columns=['county'], drop_first=False)
+    
+    #Change column names for dummy variables
+    train = train.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    validate = validate.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    test = test.rename(columns={'county_Los Angeles': 'LA', 'county_Orange':'Orange','county_Ventura':'Ventura'})
+    
+    # drop columns not needed for model 4
+    keep_cols = ['bedrooms',
+                 'bathrooms',
                  'square_feet',
                  'home_age',
                  'LA',

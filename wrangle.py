@@ -85,9 +85,6 @@ def clean_zillow(df):
     df['home_age'] = 2017- df.yearbuilt
     df["home_age"] = df["home_age"].astype(int)
     
-    # Remove outliers
-    df = remove_outliers(df,['taxvaluedollarcnt','bathroomcnt','bedroomcnt','lotsizesquarefeet'])
-    
     # renaming columns
     df = df.rename(columns = {'bedroomcnt':'bedrooms', 
                               'bathroomcnt':'bathrooms', 
