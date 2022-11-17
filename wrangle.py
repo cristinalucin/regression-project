@@ -95,6 +95,9 @@ def clean_zillow(df):
                               'transactiondate' : 'transaction_date',
                               'parcelid' : 'parcel_id'}
                                 )
+    #remove outliers
+    df = remove_outliers(df,['tax_value','bedrooms','bathrooms','square_feet'])
+    
     return df
 
 def train_validate_test_split(df, seed=123):

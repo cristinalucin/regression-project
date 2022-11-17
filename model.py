@@ -7,7 +7,7 @@ import env
 import wrangle as w
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, QuantileTransformer
+from sklearn.preprocessing import MinMaxScaler, RobustScaler, QuantileTransformer
 
 def train_validate_test_split(df, target, seed=123):
     '''
@@ -217,7 +217,7 @@ def model4_prep(train,validate,test):
     scaling data for modeling (using quantile transformer)
     '''
     #Scaling Data
-    train, validate, test = m.scale_data(
+    train, validate, test = scale_data(
         train, validate, test, columns_to_scale=['bedrooms','bathrooms','square_feet','home_age'], return_scaler=False)
 
     #Make Dummy Variables for county
