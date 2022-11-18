@@ -87,6 +87,9 @@ def model1_prep(train,validate,test):
     This function prepares train, validate, test for model 1 by dropping columns not necessary
     or compatible with modeling algorithms.
     '''
+    #Scaling Data
+    train, validate, test = scale_data(
+        train, validate, test, columns_to_scale=['bedrooms', 'bathrooms','square_feet'], return_scaler=False)
     # drop columns not needed for model 1
     keep_cols = ['bedrooms',
                  'bathrooms',
@@ -128,7 +131,7 @@ def model2_prep(train,validate,test):
     scaling data for modeling
     '''
     #Scaling Data
-    train, validate, test = m.scale_data(
+    train, validate, test = scale_data(
         train, validate, test, columns_to_scale=['bathrooms', 'square_feet','home_age'], return_scaler=False)
     
     #Make Dummy Variables for county
@@ -172,7 +175,7 @@ def model3_prep(train,validate,test):
     scaling data for modeling
     '''
     #Scaling Data
-    train, validate, test = m.scale_data(
+    train, validate, test = scale_data(
         train, validate, test, columns_to_scale=['bedrooms', 'square_feet','home_age'], return_scaler=False)
 
     #Make Dummy Variables for county
