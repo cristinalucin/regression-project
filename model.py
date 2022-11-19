@@ -294,3 +294,104 @@ def get_mvp_model_with_results(train, validate, test):
     evs = explained_variance_score(m1_eval.actual, m1_eval.ols_yhat)
     
     return print(f'Explained Variance={round(evs,3)}, Baseline Model RMSE: {round(baseline_RMSE,3)}, MVP model RMSE is:{round(ols_RMSE,3)}')
+
+
+def evaluate_models(X_train, y_train, X_validate, y_validate):
+    ''' 
+    This function takes in the X and y objects and runs the following models:
+    - Baseline model using y_train mean
+    - LarsLasso model with alpha=1
+    - Polynomial Features 3rd degree with LR
+    Then, Returns a DataFrame with the results
+    '''
+    # Baseline Model
+    # run the model
+    pred_mean = y_train.tax_value.mean()
+    y_train['pred_mean'] = pred_mean
+    y_validate['pred_mean'] = pred_mean
+    rmse_train = mean_squared_error(y_train.tax_value, y_train.pred_mean, squared=False)
+    rmse_val = mean_squared_error(y_validate.tax_value, y_validate.pred_mean, squared=False)
+
+    # save the results
+    metrics = pd.DataFrame(data=[{
+        'model': 'baseline_mean',
+        'rmse_train': rmse_train,
+        'r2_train': explained_variance_score(y_train.tax_value, y_train.pred_mean),
+        'rmse_val': rmse_val,
+        'r2_val': explained_variance_score(y_validate.tax_value, y_validate.pred_mean)}])
+
+    # LassoLars Model
+    lars = LassoLars(alpha=1)
+    lars.fit(X_train, y_train.tax_value)
+    y_train['pred_lars'] = lars.predict(X_train)
+    rmse_train = mean_squared_error(y_train.tax_value, y_train.pred_lars, squared=False)
+    y_validate['pred_lars'] = lars.predict(X_validate)
+    rmse_val = mean_squared_error(y_validate.tax_value, y_validate.pred_lars, squared=False)
+
+    # save the results
+    metrics = metrics.append({
+        'model': 'LarsLasso, alpha 1',
+        'rmse_train': rmse_train,
+        'r2_train': explained_variance_score(y_train.tax_value, y_train.pred_lars),
+        'rmse_val': rmse_val,
+        'r2_val': explained_variance_score(y_validate.tax_value, y_validate.pred_lars)}, ignore_index=True)
+
+    # Polynomial Model, 3rd Degree
+    # set up the model
+    pf = PolynomialFeatures(degree=3)
+    X_train_d3 = pf.fit_transform(X_train)
+    X_val_d3 = pf.transform(X_validate)
+    
+    # run the model
+    lm2 = LinearRegression()
+    lm2.fit(X_train_d3, y_train.tax_value)
+    y_train['pred_lm2'] = lm2.predict(X_train_d3)
+    rmse_train = mean_squared_error(y_train.tax_value, y_train.pred_lm2, squared=False)
+    y_validate['pred_lm2'] = lm2.predict(X_val_d3)
+    rmse_val = mean_squared_error(y_validate.tax_value, y_validate.pred_lm2, squared=False)
+
+    # save the results
+    metrics = metrics.append({
+        'model': 'Polynomial Features 3rd Degree',
+        'rmse_train': rmse_train,
+        'r2_train': explained_variance_score(y_train.tax_value, y_train.pred_lm2),
+        'rmse_val': rmse_val,
+        'r2_val': explained_variance_score(y_validate.tax_value, y_validate.pred_lm2)}, ignore_index=True)
+
+    return metrics
+
+def evaluate_model_test(X_train, X_validate, X_test, y_train, y_validate, y_test):
+    ''' 
+    This function takes in the X and y objects and then runs Polynomial Features 3rd
+    Degree Regression Model. It then returns the results in a dataframe, including model
+    performance on testing data
+    '''
+    # set up the model
+    pf = PolynomialFeatures(degree=3)
+    X_train_d3 = pf.fit_transform(X_train)
+    X_val_d3 = pf.transform(X_validate)
+    X_test_d3 = pf.transform(X_test)
+
+    # run the model
+    lm2 = LinearRegression()
+    lm2.fit(X_train_d3, y_train.tax_value)
+    y_train['pred_lm2'] = lm2.predict(X_train_d3)
+    rmse_train = mean_squared_error(y_train.tax_value, y_train.pred_lm2, squared=False)
+    y_validate['pred_lm2'] = lm2.predict(X_val_d3)
+    rmse_val = mean_squared_error(y_validate.tax_value, y_validate.pred_lm2, squared=False)
+    y_test['pred_lm2'] = lm2.predict(X_test_d3)
+    rmse_test = mean_squared_error(y_test.tax_value, y_test.pred_lm2, squared=False)
+
+    # save the results
+    results = pd.DataFrame({'train': 
+                               {'rmse': rmse_train, 
+                                'r2': explained_variance_score(y_train.tax_value, y_train.pred_lm2)},
+                           'validate': 
+                               {'rmse': rmse_val, 
+                                'r2': explained_variance_score(y_validate.tax_value, y_validate.pred_lm2)},
+                           'test': 
+                               {'rmse': rmse_test, 
+                                'r2': explained_variance_score(y_test.tax_value, y_test.pred_lm2)}
+                          })
+    
+    return results
