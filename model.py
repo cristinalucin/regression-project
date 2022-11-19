@@ -7,7 +7,10 @@ import env
 import wrangle as w
 
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import MinMaxScaler, RobustScaler, QuantileTransformer
+from sklearn.preprocessing import MinMaxScaler, RobustScaler, QuantileTransformer, PolynomialFeatures
+from sklearn.linear_model import LinearRegression, LassoLars, TweedieRegressor
+from sklearn.metrics import explained_variance_score, mean_squared_error
+from math import sqrt
 
 def train_validate_test_split(df, target, seed=123):
     '''
@@ -82,14 +85,11 @@ def get_dummies(train,validate,test):
     
     return train, validate, test
         
-def model1_prep(train,validate,test):
+def mvp_model_prep(train,validate,test):
     '''
     This function prepares train, validate, test for model 1 by dropping columns not necessary
     or compatible with modeling algorithms.
     '''
-    #Scaling Data
-    train, validate, test = scale_data(
-        train, validate, test, columns_to_scale=['bedrooms', 'bathrooms','square_feet'], return_scaler=False)
     # drop columns not needed for model 1
     keep_cols = ['bedrooms',
                  'bathrooms',
@@ -257,3 +257,40 @@ def model4_prep(train,validate,test):
     y_test = test[['tax_value']].reset_index(drop=True)
     
     return X_train, X_validate, X_test, y_train, y_validate, y_test
+
+def get_mvp_model_with_results(train, validate, test):
+    
+    '''This function takes in train, validate, test, scales the data using min-max, preps the data for
+    modeling, and returns the evaluation of the MVP model via EVS and RMSE'''
+    
+    #Scale data using min-max
+    columns_to_scale = ['bedrooms', 'bathrooms','square_feet']
+    # make the object, put it into the variable scaler
+    scaler = MinMaxScaler()
+    # fit the object to my data:
+    train[columns_to_scale] = scaler.fit_transform(train[columns_to_scale])
+    validate[columns_to_scale] = scaler.transform(validate[columns_to_scale])
+    test[columns_to_scale] = scaler.transform(test[columns_to_scale])
+    
+    #Prep data for modeling iteration 1
+    X_train, X_validate, X_test, y_train, y_validate, y_test = mvp_model_prep(train, validate, test)
+    #Make a copy of y_train to evaluate results, renaming tax_value
+    m1_eval = y_train.copy()
+    m1_eval = m1_eval.rename(columns={'tax_value': 'actual'})
+    #Establish baseline as mean
+    m1_eval['baseline_yhat'] = m1_eval['actual'].mean()
+    #Calculate baseline residuals
+    m1_eval['residuals'] = m1_eval.baseline_yhat - m1_eval.actual
+    #Set model as LR, fit and transform
+    lm = LinearRegression(normalize=True)
+    lm.fit(X_train, y_train.tax_value)
+    #Make Predictions
+    m1_eval['ols_yhat'] = lm.predict(X_train)
+    #Calculate RMSE
+    ols_RMSE = sqrt(mean_squared_error(m1_eval.actual, m1_eval.ols_yhat))
+    #Calculate baseline RMSE
+    baseline_RMSE = sqrt(mean_squared_error(m1_eval.actual, m1_eval.baseline_yhat))
+    # sklearn.metrics.explained_variance_score
+    evs = explained_variance_score(m1_eval.actual, m1_eval.ols_yhat)
+    
+    return print(f'Explained Variance={round(evs,3)}, Baseline Model RMSE: {round(baseline_RMSE,3)}, MVP model RMSE is:{round(ols_RMSE,3)}')
