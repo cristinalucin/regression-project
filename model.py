@@ -213,7 +213,7 @@ def model3_prep(train,validate,test):
     return X_train, X_validate, X_test, y_train, y_validate, y_test
 
 
-def model4_prep(train,validate,test):
+def model_prep(train,validate,test):
     '''
     This function prepares train, validate, test for model 4 by dropping columns not necessary
     or compatible with modeling algorithms, splitting data into target and feature (X and Y), and
